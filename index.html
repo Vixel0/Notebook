@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notebook Pro - تطبيق الملاحظات المتقدم</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="title">📓 Notebook Pro</h1>
+                <div class="header-actions">
+                    <button class="theme-toggle" id="themeToggle" title="تبديل الوضع">
+                        <span class="theme-icon">🌙</span>
+                    </button>
+                    <button class="settings-btn" id="settingsBtn" title="الإعدادات">
+                        ⚙️
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Settings Modal -->
+        <div id="settingsModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>⚙️ الإعدادات</h2>
+                    <button class="close-btn" id="closeSettings">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <!-- Sound Settings -->
+                    <div class="setting-group">
+                        <h3>🔊 الأصوات والتنبيهات</h3>
+                        <label class="toggle-label">
+                            <input type="checkbox" id="soundEnabled" checked>
+                            <span>تفعي�� الأصوات</span>
+                        </label>
+                        <label class="toggle-label">
+                            <input type="checkbox" id="notificationsEnabled" checked>
+                            <span>تفعيل الإشعارات</span>
+                        </label>
+                        <label class="toggle-label">
+                            <input type="checkbox" id="vibrationEnabled" checked>
+                            <span>تفعيل الاهتزاز</span>
+                        </label>
+                    </div>
+
+                    <!-- Display Settings -->
+                    <div class="setting-group">
+                        <h3>🎨 إعدادات العرض</h3>
+                        <label>
+                            حجم الخط الافتراضي:
+                            <input type="number" id="defaultFontSize" min="12" max="20" value="16" class="input-number">
+                        </label>
+                        <label>
+                            الخط الافتراضي:
+                            <select id="defaultFont" class="select-field">
+                                <option value="Arial">Arial</option>
+                                <option value="Georgia">Georgia</option>
+                                <option value="Courier New">Courier New</option>
+                            </select>
+                        </label>
+                    </div>
+
+                    <!-- Backup & Export -->
+                    <div class="setting-group">
+                        <h3>💾 النسخ الاحتياطية والتصدير</h3>
+                        <button id="exportJSON" class="btn btn-secondary">📥 تصدير JSON</button>
+                        <button id="exportCSV" class="btn btn-secondary">📊 تصدير CSV</button>
+                        <button id="autoBackup" class="btn btn-secondary">🔄 نسخة احتياطية تلقائية</button>
+                    </div>
+
+                    <!-- Data Management -->
+                    <div class="setting-group">
+                        <h3>🗑️ إدارة البيانات</h3>
+                        <button id="deleteAllData" class="btn btn-danger">⚠️ حذف جميع البيانات</button>
+                        <button id="resetSettings" class="btn btn-secondary">🔄 إعادة تعيين الإعدادات</button>
+                    </div>
+
+                    <!-- Language -->
+                    <div class="setting-group">
+                        <h3>🌐 اللغة</h3>
+                        <label>
+                            <input type="radio" name="language" value="ar" checked> العربية
+                        </label>
+                        <label>
+                            <input type="radio" name="language" value="en"> English
+                        </label>
+                    </div>
+
+                    <!-- About -->
+                    <div class="setting-group">
+                        <h3>ℹ️ حول التطبيق</h3>
+                        <p>Notebook Pro v2.0</p>
+                        <p>تطبيق متقدم لإدارة الملاحظات والمهام والعادات</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <nav class="nav-tabs">
+            <button class="tab-btn active" data-tab="notes">📝 الملاحظات</button>
+            <button class="tab-btn" data-tab="tasks">✅ المهام</button>
+            <button class="tab-btn" data-tab="habits">🎯 العادات</button>
+            <button class="tab-btn" data-tab="pomodoro">⏲️ Pomodoro</button>
+            <button class="tab-btn" data-tab="stats">📊 الإحصائيات</button>
+            <button class="tab-btn" data-tab="achievements">🏆 الإنجازات</button>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- NOTES TAB -->
+            <section id="notes" class="tab-content active">
+                <div class="section-header">
+                    <h2>📝 الملاحظات</h2>
+                </div>
+
+                <!-- Search and Filter -->
+                <div class="search-filter">
+                    <input type="text" id="searchNotes" placeholder="🔍 ابحث عن ملاحظة..." class="input-field">
+                    <select id="filterTags" class="select-field">
+                        <option value="">الكل</option>
+                    </select>
+                    <select id="sortNotes" class="select-field">
+                        <option value="newest">الأحدث أولاً</option>
+                        <option value="oldest">الأقدم أولاً</option>
+                        <option value="title">حسب العنوان</option>
+                    </select>
+                </div>
+
+                <div class="notes-controls">
+                    <input type="text" id="noteTitle" placeholder="عنوان الملاحظة..." class="input-field">
+                    
+                    <div class="controls-row">
+                        <select id="fontFamily" class="select-field">
+                            <option value="Arial">Arial</option>
+                            <option value="Georgia">Georgia</option>
+                            <option value="Courier New">Courier New</option>
+                            <option value="Verdana">Verdana</option>
+                            <option value="Times New Roman">Times New Roman</option>
+                            <option value="Comic Sans MS">Comic Sans MS</option>
+                        </select>
+
+                        <input type="number" id="fontSize" min="12" max="32" value="16" class="input-number">
+                        <span class="label">حجم الخط</span>
+
+                        <input type="color" id="fontColor" value="#000000" class="color-picker">
+                        <span class="label">لون الخط</span>
+                    </div>
+
+                    <div class="controls-row">
+                        <select id="bgColor" class="select-field">
+                            <option value="bg-light-blue">أزرق فاتح</option>
+                            <option value="bg-mint">أخضر فاتح</option>
+                            <option value="bg-peach">وردي فاتح</option>
+                            <option value="bg-yellow">أصفر فاتح</option>
+                            <option value="bg-lavender">بنفسجي فاتح</option>
+                            <option value="bg-coral">مرجاني</option>
+                            <option value="bg-gradient-1">تدرج أزرق برتقالي</option>
+                            <option value="bg-gradient-2">تدرج أخضر وردي</option>
+                            <option value="bg-gradient-3">تدرج بنفسجي أزرق</option>
+                        </select>
+                    </div>
+
+                    <div class="controls-row">
+                        <input type="text" id="noteTags" placeholder="أضف تصنيفات (فاصل بينها بـ فاصلة)" class="input-field">
+                    </div>
+                </div>
+
+                <textarea id="noteContent" placeholder="اكتب ملاحظتك هنا..." class="textarea-field"></textarea>
+
+                <div class="button-group">
+                    <button id="saveNote" class="btn btn-primary">💾 حفظ</button>
+                    <button id="clearNote" class="btn btn-secondary">🗑️ مسح</button>
+                    <button id="exportNotePDF" class="btn btn-secondary">📄 تصدير PDF</button>
+                </div>
+
+                <div id="notesList" class="notes-list">
+                    <!-- Notes will be displayed here -->
+                </div>
+            </section>
+
+            <!-- TASKS TAB -->
+            <section id="tasks" class="tab-content">
+                <div class="section-header">
+                    <h2>✅ المهام اليومية</h2>
+                </div>
+
+                <div class="tasks-controls">
+                    <input type="text" id="taskInput" placeholder="أضف مهمة جديدة..." class="input-field">
+                    <select id="taskPriority" class="select-field">
+                        <option value="low">🟢 منخفضة</option>
+                        <option value="medium">🟡 متوسطة</option>
+                        <option value="high">🔴 عالية</option>
+                    </select>
+                    <button id="addTask" class="btn btn-primary">➕ إضافة</button>
+                </div>
+
+                <div class="tasks-list" id="tasksList">
+                    <!-- Tasks will be displayed here -->
+                </div>
+
+                <div class="stats">
+                    <p>المهام المنجزة: <span id="completedCount">0</span> من <span id="totalCount">0</span></p>
+                    <div class="progress-bar">
+                        <div id="progressFill" class="progress-fill"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- HABITS TAB -->
+            <section id="habits" class="tab-content">
+                <div class="section-header">
+                    <h2>🎯 العادات</h2>
+                </div>
+
+                <div class="habits-controls">
+                    <input type="text" id="habitInput" placeholder="أضف عادة جديدة..." class="input-field">
+                    <button id="addHabit" class="btn btn-primary">➕ إضافة</button>
+                </div>
+
+                <div class="habits-list" id="habitsList">
+                    <!-- Habits will be displayed here -->
+                </div>
+            </section>
+
+            <!-- POMODORO TAB -->
+            <section id="pomodoro" class="tab-content">
+                <div class="section-header">
+                    <h2>⏲️ مؤقت Pomodoro</h2>
+                </div>
+
+                <div class="pomodoro-container">
+                    <div class="pomodoro-display">
+                        <div class="timer-circle">
+                            <span id="timerDisplay">25:00</span>
+                        </div>
+                    </div>
+
+                    <div class="pomodoro-controls">
+                        <button id="startTimer" class="btn btn-primary">▶️ ابدأ</button>
+                        <button id="pauseTimer" class="btn btn-secondary" disabled>⏸️ إيقاف</button>
+                        <button id="resetTimer" class="btn btn-secondary">🔄 إعادة تعيين</button>
+                    </div>
+
+                    <div class="pomodoro-settings">
+                        <div class="setting">
+                            <label>مدة العمل (دقائق):</label>
+                            <input type="number" id="workDuration" min="1" max="60" value="25" class="input-number">
+                        </div>
+                        <div class="setting">
+                            <label>مدة الراحة (دقائق):</label>
+                            <input type="number" id="breakDuration" min="1" max="30" value="5" class="input-number">
+                        </div>
+                    </div>
+
+                    <div class="pomodoro-info">
+                        <p id="sessionType">جلسة عمل</p>
+                        <p>الجلسات المنجزة: <span id="sessionsCompleted">0</span></p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- STATISTICS TAB -->
+            <section id="stats" class="tab-content">
+                <div class="section-header">
+                    <h2>📊 الإحصائيات</h2>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>📝 الملاحظات</h3>
+                        <p class="stat-number" id="totalNotesCount">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>✅ المهام</h3>
+                        <p class="stat-number" id="totalTasksCount">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>🎯 العادات</h3>
+                        <p class="stat-number" id="totalHabitsCount">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>🏆 الإنجازات</h3>
+                        <p class="stat-number" id="achievementsCount">0</p>
+                    </div>
+                </div>
+
+                <div class="charts-container">
+                    <div class="chart-wrapper">
+                        <h3>نسبة إنجاز المهام</h3>
+                        <canvas id="tasksChart"></canvas>
+                    </div>
+                    <div class="chart-wrapper">
+                        <h3>أفضل 5 عادات</h3>
+                        <canvas id="habitsChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="stats-details">
+                    <h3>📈 تفاصيل الأنشطة</h3>
+                    <div id="statsDetails"></div>
+                </div>
+            </section>
+
+            <!-- ACHIEVEMENTS TAB -->
+            <section id="achievements" class="tab-content">
+                <div class="section-header">
+                    <h2>🏆 الإنجازات والشارات</h2>
+                </div>
+
+                <div class="points-display">
+                    <div class="points-box">
+                        <span class="points-label">⭐ نقاطك</span>
+                        <span class="points-number" id="totalPoints">0</span>
+                    </div>
+                    <div class="rank-box">
+                        <span class="rank-label">🎖️ رتبتك</span>
+                        <span class="rank-number" id="userRank">مبتدئ</span>
+                    </div>
+                </div>
+
+                <div class="achievements-list" id="achievementsList">
+                    <!-- Achievements will be displayed here -->
+                </div>
+
+                <div class="challenges-section">
+                    <h3>🎯 التحديات الحالية</h3>
+                    <div class="challenges-list" id="challengesList">
+                        <!-- Challenges will be displayed here -->
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
